@@ -43,7 +43,7 @@ const transactionSlice = createSlice({
           state.transactions = JSON.parse(savedTransactions);
         }
       } catch (error) {
-        console.error('Failed to load transactions from storage:', error);
+        // Silently handle storage load errors
         state.transactions = [];
       }
     },

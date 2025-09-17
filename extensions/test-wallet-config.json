@@ -1,0 +1,20 @@
+{
+  "testnetAccounts": [
+    {
+      "name": "Test Account 1",
+      "address": "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5",
+      "network": "westend",
+      "mnemonic": "bottom drive obey lake curtain smoke basket hold race lonely fit walk"
+    },
+    {
+      "name": "Test Account 2", 
+      "address": "14E5nqKAp3oAJcmgZhBM11NW7VgVZPgN1k7aYG1D1qZ7JfWx",
+      "network": "kusama",
+      "mnemonic": "legal winner thank year wave sausage worth useful legal winner thank yellow"
+    }
+  ],
+  "testTokens": {
+    "westend": "https://faucet.polkadot.io/",
+    "kusama": "https://kusama.network/#/faucet"
+  }
+}

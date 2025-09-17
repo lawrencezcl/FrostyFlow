@@ -1,48 +1,196 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Asset, AssetState } from '@/types';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { Asset, AssetState } from '../../types';
+import { testnetApiService } from '../../services/testnetApiService';
+import { coinGeckoService } from '../../services/coinGecko';
 
 const initialState: AssetState = {
-  assets: {},
+  assets: [],
+  totalValue: 0,
+  totalEarnings: 0,
   totalUsdValue: 0,
   totalProfit: 0,
   isLoading: false,
 };
 
+// Async thunk for staking/minting - use testnet service in testnet mode
+export const stakeMint = createAsyncThunk(
+  'asset/stakeMint',
+  async (params: { asset: string; amount: number; gasMode: string; chainId?: string; address?: string }) => {
+    const { asset, amount, gasMode, chainId, address } = params;
+    
+    if (process.env.REACT_APP_ENVIRONMENT === 'testnet' && chainId && address) {
+      // Use real testnet API
+      const result = await testnetApiService.stakeMint(chainId, address, asset, amount, gasMode);
+      return {
+        asset,
+        amount,
+        liquidTokens: result.liquidTokens,
+        txHash: result.txHash,
+        success: result.success,
+        message: result.message
+      };
+    } else {
+      // Simulate staking operation for development
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return {
+        asset,
+        amount,
+        liquidTokens: amount * 0.98,
+        txHash: '0x' + Math.random().toString(16).substr(2, 64),
+        success: true,
+        message: 'Staking simulation completed'
+      };
+    }
+  }
+);
+
+// Async thunk for fetching real-time asset prices
+export const fetchAssetPrices = createAsyncThunk(
+  'asset/fetchAssetPrices',
+  async (assetSymbols: string[], { getState }) => {
+    try {
+      // Convert asset symbols to CoinGecko IDs
+      const coinGeckoIds = assetSymbols.map(symbol => 
+        coinGeckoService.getAssetCoinGeckoId(symbol)
+      );
+      
+      const result = await coinGeckoService.getMultipleAssetUsdPrices(coinGeckoIds);
+      
+      if (result.success && result.data) {
+        return result.data;
+      } else {
+        throw new Error(result.error || 'Failed to fetch prices');
+      }
+    } catch (error: any) {
+      console.error('Failed to fetch asset prices:', error);
+      throw error;
+    }
+  }
+);
+
+// Async thunk for updating asset prices in the store
+export const updateAssetPrices = createAsyncThunk(
+  'asset/updateAssetPrices',
+  async (_, { getState, dispatch }) => {
+    const state = getState() as { asset: AssetState };
+    const { assets } = state.asset;
+    
+    if (assets.length === 0) {
+      return { updatedAssets: [] };
+    }
+    
+    // Get unique asset symbols
+    const assetSymbols = [...new Set(assets.map(asset => asset.assetId))];
+    
+    try {
+      // Fetch prices for all assets
+      const priceData = await dispatch(fetchAssetPrices(assetSymbols)).unwrap();
+      
+      // Update assets with new prices
+      const updatedAssets = assets.map(asset => {
+        const coinGeckoId = coinGeckoService.getAssetCoinGeckoId(asset.assetId);
+        const priceInfo = priceData[coinGeckoId];
+        
+        if (priceInfo) {
+          const balanceNum = parseFloat(asset.balance) || 0;
+          const newUsdValue = balanceNum * priceInfo.price;
+          
+          return {
+            ...asset,
+            price: priceInfo.price,
+            usdValue: newUsdValue,
+            change24h: priceInfo.change24h,
+          };
+        }
+        
+        return asset;
+      });
+      
+      return { updatedAssets };
+    } catch (error) {
+      console.error('Failed to update asset prices:', error);
+      throw error;
+    }
+  }
+);
+
+// Async thunk for redemption
+export const initiateRedeem = createAsyncThunk(
+  'asset/initiateRedeem',
+  async (params: { asset: string; amount: number; chainId?: string; address?: string }) => {
+    const { asset, amount, chainId, address } = params;
+    
+    if (process.env.REACT_APP_ENVIRONMENT === 'testnet' && chainId && address) {
+      // Use real testnet API
+      const result = await testnetApiService.initiateRedeem(chainId, address, asset, amount);
+      return {
+        asset,
+        amount,
+        estimatedReceiveAmount: result.estimatedReceiveAmount,
+        txHash: result.txHash,
+        success: result.success,
+        message: result.message,
+        unlockTime: result.unlockTime
+      };
+    } else {
+      // Simulate redemption
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return {
+        asset,
+        amount,
+        estimatedReceiveAmount: amount * 0.95,
+        txHash: '0x' + Math.random().toString(16).substr(2, 64),
+        success: true,
+        message: 'Redemption simulation completed',
+        unlockTime: Date.now() + 28 * 24 * 60 * 60 * 1000
+      };
+    }
+  }
+);
+
 interface UpdateAssetBalancePayload {
-  chainId: string;
   assetId: string;
-  balance: number;
+  balance: string;
   usdValue: number;
 }
 
-interface SetChainAssetsPayload {
-  chainId: string;
-  assets: Record<string, Asset>;
+interface AddAssetPayload {
+  asset: Asset;
 }
 
 const assetSlice = createSlice({
   name: 'asset',
   initialState,
   reducers: {
-    updateAssetBalance: (state, action: PayloadAction<UpdateAssetBalancePayload>) => {
-      const { chainId, assetId, balance, usdValue } = action.payload;
+    addAsset: (state, action: PayloadAction<AddAssetPayload>) => {
+      const { asset } = action.payload;
+      const existingIndex = state.assets.findIndex(a => a.id === asset.id);
       
-      if (!state.assets[chainId]) {
-        state.assets[chainId] = {};
+      if (existingIndex >= 0) {
+        state.assets[existingIndex] = asset;
+      } else {
+        state.assets.push(asset);
       }
       
-      if (state.assets[chainId][assetId]) {
-        state.assets[chainId][assetId].balance = balance;
-        state.assets[chainId][assetId].usdValue = usdValue;
-      }
-      
-      // Recalculate total USD value
+      // Recalculate totals
       assetSlice.caseReducers.calculateTotals(state);
     },
     
-    setChainAssets: (state, action: PayloadAction<SetChainAssetsPayload>) => {
-      const { chainId, assets } = action.payload;
-      state.assets[chainId] = assets;
+    updateAssetBalance: (state, action: PayloadAction<UpdateAssetBalancePayload>) => {
+      const { assetId, balance, usdValue } = action.payload;
+      
+      const asset = state.assets.find(a => a.id === assetId);
+      if (asset) {
+        asset.balance = balance;
+        asset.usdValue = usdValue;
+      }
+      
+      // Recalculate total values
+      assetSlice.caseReducers.calculateTotals(state);
+    },
+    
+    setChainAssets: (state, action: PayloadAction<Asset[]>) => {
+      state.assets = action.payload;
       
       // Recalculate totals
       assetSlice.caseReducers.calculateTotals(state);
@@ -56,46 +204,186 @@ const assetSlice = createSlice({
       let totalValue = 0;
       let totalProfit = 0;
       
-      Object.values(state.assets).forEach((chainAssets) => {
-        Object.values(chainAssets).forEach((asset) => {
-          totalValue += asset.usdValue;
-          // Simplified profit calculation: (current_balance - initial_staked_amount) * rate
-          // For now, we'll calculate based on the difference from the base asset value
-          const baseValue = asset.balance / asset.rate * asset.usdValue / asset.balance;
-          const profit = asset.usdValue - baseValue;
-          totalProfit += Math.max(0, profit);
-        });
+      state.assets.forEach((asset) => {
+        totalValue += asset.usdValue;
+        // 简化利润计算
+        const balanceNum = parseFloat(asset.balance) || 0;
+        const profit = balanceNum * 0.05; // 模拟5%利润
+        totalProfit += profit;
       });
       
       state.totalUsdValue = totalValue;
       state.totalProfit = totalProfit;
+      state.totalValue = totalValue;
+      state.totalEarnings = totalProfit;
     },
     
-    updateAssetApy: (state, action: PayloadAction<{ chainId: string; assetId: string; apy: number }>) => {
-      const { chainId, assetId, apy } = action.payload;
+    updateAssetApy: (state, action: PayloadAction<{ assetId: string; apy: number }>) => {
+      const { assetId, apy } = action.payload;
       
-      if (state.assets[chainId]?.[assetId]) {
-        state.assets[chainId][assetId].apy = apy;
+      const asset = state.assets.find(a => a.id === assetId);
+      if (asset) {
+        asset.apy = apy;
       }
     },
     
-    updateAssetRate: (state, action: PayloadAction<{ chainId: string; assetId: string; rate: number }>) => {
-      const { chainId, assetId, rate } = action.payload;
+    updateAssetRate: (state, action: PayloadAction<{ assetId: string; rate: number }>) => {
+      const { assetId, rate } = action.payload;
       
-      if (state.assets[chainId]?.[assetId]) {
-        state.assets[chainId][assetId].rate = rate;
+      const asset = state.assets.find(a => a.id === assetId);
+      if (asset) {
+        asset.rate = rate;
       }
     },
     
     clearAssets: (state) => {
-      state.assets = {};
+      state.assets = [];
       state.totalUsdValue = 0;
       state.totalProfit = 0;
+      state.totalValue = 0;
+      state.totalEarnings = 0;
     },
+
+    // Action for setting asset prices and 24h changes
+    updateAssetPricesAndChanges: (state, action: PayloadAction<Array<{ assetId: string; price: number; change24h: number }>>) => {
+      action.payload.forEach(update => {
+        const asset = state.assets.find(a => a.assetId === update.assetId);
+        if (asset) {
+          asset.price = update.price;
+          asset.change24h = update.change24h;
+          // Recalculate USD value
+          const balanceNum = parseFloat(asset.balance) || 0;
+          asset.usdValue = balanceNum * update.price;
+        }
+      });
+      
+      // Recalculate totals
+      assetSlice.caseReducers.calculateTotals(state);
+    },
+    
+    initializeMockAssets: (state) => {
+      // 模拟初始资产数据
+      const mockAssets: Asset[] = [
+        {
+          id: 'dot_1',
+          assetId: 'DOT',
+          baseAssetId: 'DOT',
+          symbol: 'DOT',
+          name: 'Polkadot',
+          balance: '10.0',
+          price: 6.5,
+          usdValue: 65,
+          chain: 'Polkadot',
+          apy: 12.5,
+          rate: 1,
+          minMintAmount: 1
+        },
+        {
+          id: 'vdot_1',
+          assetId: 'vDOT',
+          baseAssetId: 'DOT',
+          symbol: 'vDOT',
+          name: 'Liquid DOT',
+          balance: '5.2',
+          price: 6.3,
+          usdValue: 32.76,
+          chain: 'Bifrost',
+          apy: 12.5,
+          rate: 1.02,
+          minMintAmount: 0.1
+        },
+        {
+          id: 'ksm_1',
+          assetId: 'KSM',
+          baseAssetId: 'KSM',
+          symbol: 'KSM',
+          name: 'Kusama',
+          balance: '2.5',
+          price: 25.8,
+          usdValue: 64.5,
+          chain: 'Kusama',
+          apy: 15.2,
+          rate: 1,
+          minMintAmount: 0.1
+        }
+      ];
+      
+      state.assets = mockAssets;
+      assetSlice.caseReducers.calculateTotals(state);
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchAssetPrices.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(fetchAssetPrices.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Price data fetched successfully
+      })
+      .addCase(fetchAssetPrices.rejected, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(updateAssetPrices.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateAssetPrices.fulfilled, (state, action) => {
+        state.isLoading = false;
+        
+        if (action.payload.updatedAssets.length > 0) {
+          state.assets = action.payload.updatedAssets;
+          assetSlice.caseReducers.calculateTotals(state);
+        }
+      })
+      .addCase(updateAssetPrices.rejected, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(stakeMint.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(stakeMint.fulfilled, (state, action) => {
+        state.isLoading = false;
+        
+        if (action.payload.success) {
+          // Add new liquid asset
+          const newAsset: Asset = {
+            id: `v${action.payload.asset}_${Date.now()}`,
+            assetId: `v${action.payload.asset}`,
+            baseAssetId: action.payload.asset,
+            symbol: `v${action.payload.asset}`,
+            name: `Liquid ${action.payload.asset}`,
+            balance: action.payload.liquidTokens.toString(),
+            price: 1,
+            usdValue: action.payload.liquidTokens,
+            chain: 'Bifrost',
+            apy: 12.5,
+            rate: 1.02,
+            minMintAmount: 0.1
+          };
+          state.assets.push(newAsset);
+        }
+        
+        assetSlice.caseReducers.calculateTotals(state);
+      })
+      .addCase(stakeMint.rejected, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(initiateRedeem.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(initiateRedeem.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Redemption logic could be implemented here
+        assetSlice.caseReducers.calculateTotals(state);
+      })
+      .addCase(initiateRedeem.rejected, (state) => {
+        state.isLoading = false;
+      });
   },
 });
 
 export const {
+  addAsset,
   updateAssetBalance,
   setChainAssets,
   setAssetLoading,
@@ -103,6 +391,8 @@ export const {
   updateAssetApy,
   updateAssetRate,
   clearAssets,
+  updateAssetPricesAndChanges,
+  initializeMockAssets,
 } = assetSlice.actions;
 
 export default assetSlice.reducer;

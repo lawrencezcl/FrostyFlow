@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { Button, Modal, Card, Space, Typography, message } from 'antd';
+import { Button, Modal } from 'antd';
 import { WalletOutlined } from '@ant-design/icons';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { setWalletConnected, setWalletDisconnected } from '@/redux/slices/walletSlice';
-import { WalletType, WalletAccount } from '@/types';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { setWalletConnected, setWalletDisconnected } from '../redux/slices/walletSlice';
+import { WalletType, WalletAccount } from '../types';
 
-const { Text } = Typography;
-
-export const WalletConnect: React.FC = () => {
+const WalletConnect: React.FC = () => {
   const dispatch = useAppDispatch();
   const wallet = useAppSelector((state: any) => state.wallet);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -45,16 +43,14 @@ export const WalletConnect: React.FC = () => {
         walletType,
       }));
 
-      message.success('钱包连接成功');
       setIsModalVisible(false);
     } catch (error) {
-      message.error('钱包连接失败');
+      console.error('钱包连接失败:', error);
     }
   };
 
   const handleDisconnect = () => {
     dispatch(setWalletDisconnected());
-    message.info('钱包已断开连接');
   };
 
   const formatAddress = (address: string) => {
@@ -63,19 +59,24 @@ export const WalletConnect: React.FC = () => {
 
   if (wallet.isConnected && wallet.account) {
     return (
-      <Space>
-        <Text>{formatAddress(wallet.account.address)}</Text>
-        <Button size="small" onClick={handleDisconnect}>
-          断开连接
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <WalletOutlined />
+        <span>{formatAddress(wallet.account.address)}</span>
+        <Button 
+          size="small" 
+          onClick={handleDisconnect}
+          style={{ marginLeft: '8px' }}
+        >
+          断开
         </Button>
-      </Space>
+      </div>
     );
   }
 
   return (
     <>
-      <Button
-        type="primary"
+      <Button 
+        type="primary" 
         icon={<WalletOutlined />}
         onClick={() => setIsModalVisible(true)}
       >
@@ -89,25 +90,29 @@ export const WalletConnect: React.FC = () => {
         footer={null}
         width={400}
       >
-        <div style={{ marginBottom: 16 }}>
-          <Text type="secondary">
-            请选择兼容的钱包类型进行连接
-          </Text>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {wallets.map((walletOption) => (
+            <Button
+              key={walletOption.type}
+              type="default"
+              size="large"
+              onClick={() => handleConnect(walletOption.type)}
+              style={{ 
+                textAlign: 'left', 
+                height: 'auto', 
+                padding: '12px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start'
+              }}
+            >
+              <div style={{ fontWeight: 'bold' }}>{walletOption.name}</div>
+              <div style={{ fontSize: '12px', color: '#666' }}>
+                {walletOption.description}
+              </div>
+            </Button>
+          ))}
         </div>
-        
-        {wallets.map((walletOption) => (
-          <Card
-            key={walletOption.type}
-            hoverable
-            onClick={() => handleConnect(walletOption.type)}
-            style={{ marginBottom: 16, cursor: 'pointer' }}
-          >
-            <div>
-              <h4>{walletOption.name}</h4>
-              <Text type="secondary">{walletOption.description}</Text>
-            </div>
-          </Card>
-        ))}
       </Modal>
     </>
   );

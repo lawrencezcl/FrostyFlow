@@ -1,10 +1,41 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Redeem, RedeemState } from '@/types';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { Redeem, RedeemState } from '../../types';
 
 const initialState: RedeemState = {
   redeems: [],
   isLoading: false,
 };
+
+// Async thunks for redeem operations
+export const initiateRedeem = createAsyncThunk(
+  'redeem/initiateRedeem',
+  async (params: { asset: string; amount: number; type: 'instant' | 'standard' }) => {
+    // 模拟赎回操作
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const redeem: Redeem = {
+      redeemId: 'redeem_' + Date.now(),
+      type: params.type,
+      assetId: params.asset,
+      amount: params.amount,
+      status: 'unlocking',
+      expireTime: Date.now() + (params.type === 'instant' ? 0 : 7 * 24 * 60 * 60 * 1000),
+      createdTime: Date.now(),
+      chainId: 'bifrost'
+    };
+    
+    return redeem;
+  }
+);
+
+export const claimRedeem = createAsyncThunk(
+  'redeem/claimRedeem',
+  async (redeemId: string) => {
+    // 模拟领取操作
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return redeemId;
+  }
+);
 
 const redeemSlice = createSlice({
   name: 'redeem',
@@ -12,8 +43,6 @@ const redeemSlice = createSlice({
   reducers: {
     addRedeemRecord: (state, action: PayloadAction<Redeem>) => {
       state.redeems.unshift(action.payload);
-      
-      // Save to localStorage
       localStorage.setItem('currentRedeems', JSON.stringify(state.redeems));
     },
     
@@ -38,7 +67,7 @@ const redeemSlice = createSlice({
           state.redeems = JSON.parse(savedRedeems);
         }
       } catch (error) {
-        console.error('Failed to load redeems from storage:', error);
+        // Silently handle storage load errors
         state.redeems = [];
       }
     },
@@ -63,18 +92,34 @@ const redeemSlice = createSlice({
         localStorage.setItem('currentRedeems', JSON.stringify(state.redeems));
       }
     },
-    
-    // Helper to get redeems by status
-    getRedeemsByStatus: (state, action: PayloadAction<Redeem['status']>) => {
-      const status = action.payload;
-      return state.redeems.filter(r => r.status === status);
-    },
-    
-    // Helper to get redeems by chain
-    getRedeemsByChain: (state, action: PayloadAction<string>) => {
-      const chainId = action.payload;
-      return state.redeems.filter(r => r.chainId === chainId);
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(initiateRedeem.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(initiateRedeem.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.redeems.unshift(action.payload);
+        localStorage.setItem('currentRedeems', JSON.stringify(state.redeems));
+      })
+      .addCase(initiateRedeem.rejected, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(claimRedeem.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(claimRedeem.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const redeem = state.redeems.find(r => r.redeemId === action.payload);
+        if (redeem) {
+          redeem.status = 'completed';
+          localStorage.setItem('currentRedeems', JSON.stringify(state.redeems));
+        }
+      })
+      .addCase(claimRedeem.rejected, (state) => {
+        state.isLoading = false;
+      });
   },
 });
 
@@ -86,8 +131,6 @@ export const {
   removeRedeem,
   clearRedeems,
   updateRedeemExpiry,
-  getRedeemsByStatus,
-  getRedeemsByChain,
 } = redeemSlice.actions;
 
 export default redeemSlice.reducer;

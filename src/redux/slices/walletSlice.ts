@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { WalletState, WalletAccount, WalletType } from '@/types';
+import { WalletState, WalletAccount, WalletType } from '../../types';
 
 const initialState: WalletState = {
   isConnected: false,
   account: null,
   walletType: null,
   isLoading: false,
+  balance: '0',
 };
 
 const walletSlice = createSlice({
@@ -66,7 +67,7 @@ const walletSlice = createSlice({
           }
         }
       } catch (error) {
-        console.error('Failed to initialize wallet from session:', error);
+        // Silently handle session initialization errors
         // Clear invalid session data
         sessionStorage.removeItem('walletConnection');
       }
@@ -87,5 +88,8 @@ export const {
   initializeWalletFromSession,
   clearWalletError,
 } = walletSlice.actions;
+
+// 添加disconnectWallet作为setWalletDisconnected的别名
+export const disconnectWallet = setWalletDisconnected;
 
 export default walletSlice.reducer;

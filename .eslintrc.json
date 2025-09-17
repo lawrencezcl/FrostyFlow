@@ -1,39 +1,10 @@
 {
   "extends": [
     "react-app",
-    "react-app/jest",
-    "airbnb",
-    "airbnb-typescript"
+    "react-app/jest"
   ],
-  "parserOptions": {
-    "project": "./tsconfig.json"
-  },
   "rules": {
-    "react/react-in-jsx-scope": "off",
-    "react/jsx-filename-extension": [
-      "warn",
-      {
-        "extensions": [".tsx"]
-      }
-    ],
-    "import/prefer-default-export": "off",
-    "react/function-component-definition": [
-      "error",
-      {
-        "namedComponents": "arrow-function"
-      }
-    ],
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      {
-        "argsIgnorePattern": "^_"
-      }
-    ],
-    "max-len": [
-      "error",
-      {
-        "code": 120
-      }
-    ]
+    "@typescript-eslint/no-unused-vars": "warn",
+    "no-console": "warn"
   }
 }

@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp"],
+      "env": {}
+    },
+    "figma": {
+      "command": "npx", 
+      "args": ["figma-developer-mcp"],
+      "env": {
+        "FIGMA_API_TOKEN": "your_figma_token_here"
+      }
+    },
+    "antv-chart": {
+      "command": "npx",
+      "args": ["@antv/mcp-server-chart"],
+      "env": {}
+    }
+  }
+}

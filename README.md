@@ -6,6 +6,14 @@
 
 FrostyFlow是基于Bifrost协议开发的多链流动性质押平台，为用户提供安全、便捷的跨链质押服务。用户可以质押基础资产（如DOT、KSM）获得对应的流动性质押代币（如vDOT、vKSM），在保持资产流动性的同时获得质押收益。
 
+## 🚀 项目状态
+
+- ✅ **开发完成**: 核心功能已实现
+- ✅ **本地构建**: 成功构建并运行
+- ✅ **UI/UX测试**: 完成全面测试
+- ✅ **文档更新**: 项目文档已更新
+- 🔄 **待集成**: 真实区块链数据和钱包
+
 ## ✨ 核心功能
 
 ### 🔗 多链钱包连接
@@ -49,9 +57,34 @@ FrostyFlow是基于Bifrost协议开发的多链流动性质押平台，为用户
 - **HTTP客户端**: Axios 1.6.8
 
 ### 区块链集成
-- **Polkadot集成**: @polkadot/api 12.6.2
-- **钱包连接**: @polkadot/extension-dapp 0.46.9
+- **Polkadot集成**: @polkadot/api 10.13.1
+- **钱包连接**: @polkadot/extension-dapp 0.44.1
 - **Bifrost SDK**: 集成Bifrost官方SDK
+
+### 项目结构
+```
+src/
+├── components/          # 可复用组件
+│   ├── Layout.tsx       # 主布局组件
+│   └── WalletConnect.tsx # 钱包连接组件
+├── pages/               # 页面组件
+│   ├── AssetOverview.tsx # 资产总览
+│   ├── StakingMint.tsx   # 质押铸造
+│   ├── RedemptionPage.tsx # 质押赎回
+│   ├── HelpCenter.tsx    # 帮助中心
+│   └── Settings.tsx      # 系统设置
+├── redux/               # 状态管理
+│   ├── slices/          # Redux 切片
+│   ├── hooks.ts         # 类型安全的 hooks
+│   └── store.ts         # Store 配置
+├── services/            # 服务层
+│   ├── bifrostSdk.ts    # Bifrost SDK 封装
+│   ├── coinGecko.ts     # 价格数据服务
+│   ├── polkadotApi.ts   # Polkadot API 封装
+│   └── emailService.ts  # 邮件通知服务
+├── types/               # TypeScript 类型定义
+└── styles/              # 样式文件
+```
 
 ## 🚀 快速开始
 
@@ -62,6 +95,10 @@ FrostyFlow是基于Bifrost协议开发的多链流动性质押平台，为用户
 
 ### 安装依赖
 ```bash
+# 设置国内镜像源（可选）
+npm config set registry https://registry.npmmirror.com
+
+# 安装项目依赖
 npm install
 ```
 
@@ -71,6 +108,70 @@ npm start
 ```
 
 应用将在 http://localhost:3000 启动
+
+### 构建生产版本
+```bash
+npm run build
+```
+
+### 代码质量检查
+```bash
+# 运行 ESLint 检查
+npm run lint
+
+# 自动修复可修复的问题
+npm run lint:fix
+```
+
+## 📊 测试报告
+
+项目已通过全面的UI/UX测试，详细报告请查看 [TESTING_REPORT.md](./TESTING_REPORT.md)
+
+### 测试结果概要
+- ✅ 所有页面正常渲染
+- ✅ 响应式设计兼容性优秀
+- ✅ 组件交互功能完善
+- ✅ 跨浏览器兼容性良好
+- ✅ 性能表现优秀
+
+### 运行测试
+```bash
+# 运行单元测试
+npm test
+
+# 生成测试覆盖率报告
+npm test -- --coverage
+```
+
+## 📦 部署指南
+
+### Vercel 部署（推荐）
+1. 连接 GitHub 仓库到 Vercel
+2. 导入项目并配置构建命令：`npm run build`
+3. 设置输出目录：`build`
+4. 部署完成
+
+### 传统服务器部署
+```bash
+# 构建项目
+npm run build
+
+# 将 build 目录上传到服务器
+# 配置 Web 服务器指向 build 目录
+```
+
+### 环境变量配置
+创建 `.env` 文件并配置以下变量：
+```bash
+# SendGrid 邮件服务 API Key
+REACT_APP_SENDGRID_API_KEY=your_sendgrid_api_key
+
+# CoinGecko API Key（可选）
+REACT_APP_COINGECKO_API_KEY=your_coingecko_api_key
+
+# Bifrost 节点 URL（可选）
+REACT_APP_BIFROST_RPC_URL=wss://bifrost-rpc.dwellir.com
+```
 
 ## 📄 许可证
 
