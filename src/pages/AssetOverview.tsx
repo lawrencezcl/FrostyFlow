@@ -2,16 +2,18 @@ import React from 'react';
 import { Card, Statistic, Row, Col, Table, Tag, Typography, Space, Button } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, EyeOutlined, SwapOutlined } from '@ant-design/icons';
 import { useAppSelector } from '../redux/hooks';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 
 const AssetOverview: React.FC = () => {
+  const { t } = useTranslation();
   const { assets, totalValue, totalEarnings } = useAppSelector(state => state.asset);
   const { isConnected } = useAppSelector(state => state.wallet);
 
   const columns = [
     {
-      title: '资产',
+      title: t('assets.asset'),
       dataIndex: 'symbol',
       key: 'symbol',
       render: (symbol: string, record: any) => (
@@ -38,19 +40,19 @@ const AssetOverview: React.FC = () => {
       )
     },
     {
-      title: '数量',
+      title: t('assets.quantity'),
       dataIndex: 'balance',
       key: 'balance',
       render: (balance: string) => `${parseFloat(balance || '0').toFixed(6)}`
     },
     {
-      title: '价格 (USD)',
+      title: t('assets.priceUsd'),
       dataIndex: 'price',
       key: 'price',
       render: (price: number) => `$${(price || 0).toFixed(2)}`
     },
     {
-      title: '价值 (USD)',
+      title: t('assets.valueUsd'),
       key: 'value',
       render: (record: any) => {
         const balance = parseFloat(record?.balance || '0');
@@ -60,7 +62,7 @@ const AssetOverview: React.FC = () => {
       }
     },
     {
-      title: '链',
+      title: t('assets.chain'),
       dataIndex: 'chain',
       key: 'chain',
       render: (chain: string) => (
@@ -68,12 +70,12 @@ const AssetOverview: React.FC = () => {
       )
     },
     {
-      title: '操作',
+      title: t('assets.actions'),
       key: 'actions',
       render: (record: any) => (
         <Space>
-          <Button size="small" icon={<EyeOutlined />}>详情</Button>
-          <Button size="small" icon={<SwapOutlined />}>交换</Button>
+          <Button size="small" icon={<EyeOutlined />}>{t('assets.details')}</Button>
+          <Button size="small" icon={<SwapOutlined />}>{t('assets.swap')}</Button>
         </Space>
       )
     }
@@ -82,9 +84,9 @@ const AssetOverview: React.FC = () => {
   if (!isConnected) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 0' }}>
-        <Title level={3}>欢迎来到 FrostyFlow</Title>
+        <Title level={3}>{t('assets.welcomeToFrostyFlow')}</Title>
         <Text type="secondary">
-          请先连接钱包以查看您的资产概览
+          {t('assets.connectWalletToViewOverview')}
         </Text>
       </div>
     );
@@ -92,13 +94,13 @@ const AssetOverview: React.FC = () => {
 
   return (
     <div>
-      <Title level={2}>资产总览</Title>
-      
+      <Title level={2}>{t('assets.assetOverview')}</Title>
+
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={8}>
           <Card>
             <Statistic
-              title="总资产价值"
+              title={t('assets.totalAssetValue')}
               value={totalValue}
               precision={2}
               prefix="$"
@@ -106,11 +108,11 @@ const AssetOverview: React.FC = () => {
             />
           </Card>
         </Col>
-        
+
         <Col xs={24} sm={12} lg={8}>
           <Card>
             <Statistic
-              title="累计收益"
+              title={t('assets.totalEarnings')}
               value={totalEarnings}
               precision={2}
               prefix="$"
@@ -121,11 +123,11 @@ const AssetOverview: React.FC = () => {
             />
           </Card>
         </Col>
-        
+
         <Col xs={24} sm={12} lg={8}>
           <Card>
             <Statistic
-              title="24小时变化"
+              title={t('assets.change24hLabel')}
               value={Math.random() * 10 - 5}
               precision={2}
               suffix="%"
@@ -136,7 +138,7 @@ const AssetOverview: React.FC = () => {
         </Col>
       </Row>
 
-      <Card title="资产明细" style={{ marginTop: 16 }}>
+      <Card title={t('assets.assetDetailsTitle')} style={{ marginTop: 16 }}>
         <Table
           columns={columns}
           dataSource={assets}
@@ -145,7 +147,7 @@ const AssetOverview: React.FC = () => {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 项资产`
+            showTotal: (total) => `${t('assets.total')} ${total} ${t('assets.items')}`
           }}
         />
       </Card>

@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { Card, Form, Select, InputNumber, Button, Typography, Space, Divider, Alert } from 'antd';
 import { BankOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useAppSelector } from '../redux/hooks';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const StakingMint: React.FC = () => {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   const [amount, setAmount] = useState<number | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<string>('');
   const [gasMode, setGasMode] = useState<'fast' | 'normal' | 'slow'>('normal');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { isConnected } = useAppSelector(state => state.wallet);
   
   // 模拟数据
@@ -56,10 +58,10 @@ const StakingMint: React.FC = () => {
       form.resetFields();
       setAmount(null);
       setSelectedAsset('');
-      alert('质押成功！');
+      alert(t('staking.stakeSuccess'));
     } catch (error) {
       // Handle error silently in production
-      alert('质押失败，请重试');
+      alert(t('staking.stakeFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -68,9 +70,9 @@ const StakingMint: React.FC = () => {
   if (!isConnected) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 0' }}>
-        <Title level={3}>请先连接钱包</Title>
+        <Title level={3}>{t('staking.pleaseConnectWallet')}</Title>
         <Text type="secondary">
-          您需要连接钱包才能进行质押操作
+          {t('staking.needWalletToStake')}
         </Text>
       </div>
     );
@@ -78,25 +80,25 @@ const StakingMint: React.FC = () => {
 
   return (
     <div>
-      <Title level={2}>质押铸造</Title>
+      <Title level={2}>{t('staking.title')}</Title>
       <Text type="secondary">
-        质押您的资产以获得流动性代币，同时获得质押收益
+        {t('staking.description')}
       </Text>
 
       <div style={{ marginTop: 24 }}>
-        <Card title="质押配置" style={{ maxWidth: 600 }}>
+        <Card title={t('staking.stakingConfig')} style={{ maxWidth: 600 }}>
           <Form
             form={form}
             layout="vertical"
             onFinish={handleStake}
           >
             <Form.Item
-              label="选择资产"
+              label={t('staking.selectAssetToStake')}
               name="asset"
-              rules={[{ required: true, message: '请选择要质押的资产' }]}
+              rules={[{ required: true, message: t('staking.pleaseSelectAsset') }]}
             >
               <Select
-                placeholder="选择要质押的资产"
+                placeholder={t('staking.selectAssetToStake')}
                 value={selectedAsset}
                 onChange={setSelectedAsset}
                 size="large"
@@ -113,14 +115,14 @@ const StakingMint: React.FC = () => {
             </Form.Item>
 
             <Form.Item
-              label="质押数量"
+              label={t('staking.stakingAmount')}
               name="amount"
               rules={[
-                { required: true, message: '请输入质押数量' },
-                { 
+                { required: true, message: t('staking.enterStakingAmount') },
+                {
                   validator: (_, value) => {
                     if (selectedAssetInfo && value < selectedAssetInfo.minAmount) {
-                      return Promise.reject(new Error(`最小质押数量为 ${selectedAssetInfo.minAmount} ${selectedAsset}`));
+                      return Promise.reject(new Error(`${t('staking.minStakingAmount')} ${selectedAssetInfo.minAmount} ${selectedAsset}`));
                     }
                     return Promise.resolve();
                   }
@@ -128,7 +130,7 @@ const StakingMint: React.FC = () => {
               ]}
             >
               <InputNumber
-                placeholder="输入质押数量"
+                placeholder={t('staking.enterStakingAmount')}
                 value={amount}
                 onChange={setAmount}
                 size="large"
@@ -136,15 +138,15 @@ const StakingMint: React.FC = () => {
                 min={selectedAssetInfo?.minAmount || 0}
                 max={1000000}
                 precision={6}
-                addonAfter={selectedAsset || '选择资产'}
+                addonAfter={selectedAsset || t('staking.selectAssetToStake')}
               />
             </Form.Item>
 
-            <Form.Item label="Gas 设置" name="gasMode">
+            <Form.Item label={t('staking.gasSettings')} name="gasMode">
               <Select value={gasMode} onChange={setGasMode} size="large">
-                <Option value="slow">经济模式 (约30秒) - 0.001 {nativeToken}</Option>
-                <Option value="normal">普通模式 (约15秒) - 0.003 {nativeToken}</Option>
-                <Option value="fast">快速模式 (约5秒) - 0.005 {nativeToken}</Option>
+                <Option value="slow">{t('staking.economyMode')} - 0.001 {nativeToken}</Option>
+                <Option value="normal">{t('staking.normalMode')} - 0.003 {nativeToken}</Option>
+                <Option value="fast">{t('staking.fastMode')} - 0.005 {nativeToken}</Option>
               </Select>
             </Form.Item>
 
@@ -152,30 +154,30 @@ const StakingMint: React.FC = () => {
               <>
                 <Divider />
                 <div style={{ background: '#f6f8fa', padding: 16, borderRadius: 8, marginBottom: 16 }}>
-                  <Title level={5}>交易预览</Title>
+                  <Title level={5}>{t('staking.transactionPreview')}</Title>
                   <Space direction="vertical" style={{ width: '100%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text>质押数量:</Text>
+                      <Text>{t('staking.stakingAmountLabel')}</Text>
                       <Text strong>{amount} {selectedAsset}</Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text>预计获得:</Text>
+                      <Text>{t('staking.estimatedReceive')}</Text>
                       <Text strong>{calculateLiquidTokens().toFixed(6)} v{selectedAsset}</Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text>年化收益率:</Text>
+                      <Text>{t('staking.annualizedYield')}</Text>
                       <Text strong style={{ color: '#52c41a' }}>{selectedAssetInfo?.apy}%</Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text>网络费用:</Text>
+                      <Text>{t('staking.networkFee')}</Text>
                       <Text>{calculateFee()} {nativeToken}</Text>
                     </div>
                   </Space>
                 </div>
 
                 <Alert
-                  message="提示"
-                  description={`质押后您将收到 v${selectedAsset} 代币，这些代币代表您的质押份额并可以自由转移和交易。质押收益将自动复投。`}
+                  message={t('staking.tip')}
+                  description={t('staking.stakeInfo', { asset: selectedAsset })}
                   type="info"
                   icon={<InfoCircleOutlined />}
                   style={{ marginBottom: 16 }}
@@ -193,7 +195,7 @@ const StakingMint: React.FC = () => {
                 loading={isLoading}
                 disabled={!selectedAsset || !amount}
               >
-                {isLoading ? '处理中...' : '确认质押'}
+                {isLoading ? t('staking.processing') : t('staking.confirmStake')}
               </Button>
             </Form.Item>
           </Form>
