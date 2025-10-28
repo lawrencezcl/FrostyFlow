@@ -254,6 +254,7 @@
   },
   "help": {
     "helpCenter": "Help Center",
+    "subtitle": "Find answers to common questions and learn how to use the platform",
     "frequentlyAskedQuestions": "Frequently Asked Questions",
     "gettingStarted": "Getting Started",
     "userGuide": "User Guide",
@@ -262,7 +263,85 @@
     "documentation": "Documentation",
     "community": "Community",
     "searchHelp": "Search for help...",
-    "noResultsFound": "No results found"
+    "noResultsFound": "No results found",
+    "faqs": {
+      "whatIsLiquidStaking": {
+        "question": "What is liquid staking?",
+        "answer": "Liquid staking is an innovative DeFi mechanism that allows users to stake base assets (such as DOT, KSM) and receive corresponding liquid tokens (such as vDOT, vKSM). These liquid tokens can be freely transferred and traded while continuing to earn staking rewards."
+      },
+      "howToConnectWallet": {
+        "question": "How to connect wallet?",
+        "answer": "FrostyFlow supports multiple wallets: Polkadot.js, MetaMask, Talisman. Click the 'Connect Wallet' button in the top right corner, select your installed wallet extension, and follow the prompts to complete the connection."
+      },
+      "stakingRisks": {
+        "question": "What are the risks of staking?",
+        "answer": "Staking risks include: 1) Smart contract risks 2) Validator misconduct risks 3) Network risks 4) Liquidity risks. Please ensure you fully understand these risks before proceeding with staking operations."
+      },
+      "howToRedeem": {
+        "question": "How to redeem staked assets?",
+        "answer": "You can choose two redemption methods: 1) Standard redemption: 7-28 day waiting period, no additional fees 2) Instant redemption: immediate arrival, 3-5% service fee. Select the corresponding liquid token on the 'Staking Redemption' page to proceed."
+      },
+      "howEarningsCalculated": {
+        "question": "How are earnings calculated?",
+        "answer": "Earnings are dynamically calculated based on validator performance and network parameters. Rewards are automatically compounded into your liquid tokens, and you can view real-time earnings on the Asset Overview page."
+      },
+      "supportedChains": {
+        "question": "Which chains are supported?",
+        "answer": "FrostyFlow supports multiple chains in the Bifrost ecosystem, including Bifrost Polkadot, Bifrost Kusama, Moonbeam, Moonriver, etc. The system automatically identifies compatible chain networks."
+      }
+    },
+    "guides": {
+      "beginnerGuide": {
+        "title": "Beginner's Guide",
+        "items": [
+          "1. Install and set up wallet extension",
+          "2. Connect wallet to FrostyFlow",
+          "3. Select assets and amount to stake",
+          "4. Confirm transaction and wait for confirmation",
+          "5. View received liquid tokens"
+        ]
+      },
+      "securityTips": {
+        "title": "Security Tips",
+        "items": [
+          "Always verify the correct website URL",
+          "Do not share your private keys or mnemonic phrases",
+          "Use hardware wallets for enhanced security",
+          "Test with small amounts before large operations",
+          "Regularly backup wallet information"
+        ]
+      },
+      "troubleshooting": {
+        "title": "Common Issue Resolution",
+        "items": [
+          "Wallet connection failed: Check if extension is installed and enabled",
+          "Transaction failed: Check balance and network status",
+          "Earnings display abnormal: Refresh page or wait for data sync",
+          "Redemption stuck: Contact customer service for help",
+          "Network switching issues: Manually add network configuration"
+        ]
+      }
+    },
+    "support": {
+      "technicalSupport": "Technical Support",
+      "contactUs": "Contact Us",
+      "email": "Email: support@frostyflow.com",
+      "telegram": "Telegram: @FrostyFlowSupport",
+      "discord": "Discord: FrostyFlow Community",
+      "documentationResources": "Documentation Resources",
+      "userManual": "User Manual",
+      "apiDocs": "API Documentation",
+      "smartContractSource": "Smart Contract Source Code",
+      "securityAuditReport": "Security Audit Report",
+      "communitySection": "Community",
+      "githubRepo": "GitHub Repository",
+      "officialBlog": "Official Blog",
+      "twitter": "Twitter @FrostyFlow",
+      "mediumTechSharing": "Medium Technical Sharing",
+      "version": "Version 1.0.0",
+      "lastUpdated": "Last Updated: 2024-01-15",
+      "bifrostEcosystemSupport": "Bifrost Ecosystem Support"
+    }
   },
   "settings": {
     "settings": "Settings",
@@ -310,5 +389,109 @@
     "copiedToClipboard": "Copied to clipboard!",
     "emailVerified": "Email verified successfully!",
     "accountCreated": "Account created successfully!"
+  },
+  "slpx": {
+    "slpxOneClickStaking": "SLPx One-Click Staking",
+    "description": "Optimized liquid staking solution with one-click operation",
+    "selectAsset": "Select Asset",
+    "enterAmount": "Enter Amount",
+    "estimatedReturn": "Estimated Return",
+    "stakingPeriod": "Staking Period",
+    "oneClickStake": "One-Click Stake",
+    "autoCompound": "Auto Compound",
+    "bestValidators": "Best Validators",
+    "recommendedPools": "Recommended Pools",
+    "stakingHistory": "Staking History",
+    "rewards": "Rewards",
+    "apy": "APY",
+    "totalStaked": "Total Staked",
+    "availableBalance": "Available Balance"
+  },
+  "monitoring": {
+    "multiChainAssetMonitoring": "Multi-Chain Asset Monitoring",
+    "realTimeTracking": "Real-Time Tracking",
+    "portfolioOverview": "Portfolio Overview",
+    "assetDistribution": "Asset Distribution",
+    "performanceMetrics": "Performance Metrics",
+    "chainActivity": "Chain Activity",
+    "transactionHistory": "Transaction History",
+    "alerts": "Alerts",
+    "notifications": "Notifications",
+    "riskAnalysis": "Risk Analysis",
+    "yieldComparison": "Yield Comparison",
+    "networkStatus": "Network Status",
+    "connectedChains": "Connected Chains",
+    "syncStatus": "Sync Status",
+    "lastSync": "Last Sync"
+  },
+  "bridge": {
+    "crossChainBridge": "Cross-Chain Bridge",
+    "bridgeTitle": "Bridge Assets Across Chains",
+    "description": "Seamlessly transfer assets between different blockchain networks",
+    "selectSourceChain": "Select Source Chain",
+    "selectTargetChain": "Select Target Chain",
+    "selectAsset": "Select Asset",
+    "enterAmount": "Enter Amount",
+    "supportedAssets": "Supported Assets",
+    "getQuote": "Get Quote",
+    "bridgeFee": "Bridge Fee",
+    "estimatedTime": "Estimated Time",
+    "confirmBridge": "Confirm Bridge",
+    "bridgeHistory": "Bridge History",
+    "transactionStatus": "Transaction Status",
+    "trackTransaction": "Track Transaction",
+    "swapChains": "Swap Chains",
+    "minAmount": "Minimum Amount",
+    "maxAmount": "Maximum Amount",
+    "processingTime": "Processing Time",
+    "networkFee": "Network Fee",
+    "totalFee": "Total Fee",
+    "youWillReceive": "You Will Receive",
+    "recipientAddress": "Recipient Address",
+    "bridgeSuccess": "Bridge Transfer Successful",
+    "bridgeFailed": "Bridge Transfer Failed",
+    "insufficientLiquidity": "Insufficient Liquidity",
+    "bridgeInProgress": "Bridge Transfer in Progress"
+  },
+  "network": {
+    "enhancedNetworkSupport": "Enhanced Network Support",
+    "supportedNetworks": "Supported Networks",
+    "networkStatus": "Network Status",
+    "connectionStatus": "Connection Status",
+    "latency": "Latency",
+    "blockHeight": "Block Height",
+    "activeValidators": "Active Validators",
+    "networkMetrics": "Network Metrics",
+    "peers": "Peers",
+    "syncProgress": "Sync Progress",
+    "chainId": "Chain ID",
+    "rpcEndpoint": "RPC Endpoint",
+    "testnet": "Testnet",
+    "mainnet": "Mainnet",
+    "switchNetwork": "Switch Network",
+    "addNetwork": "Add Network",
+    "networkConfiguration": "Network Configuration"
+  },
+  "status": {
+    "realtimeStatusTracking": "Real-time Status Tracking",
+    "transactionTracking": "Transaction Tracking",
+    "systemHealth": "System Health",
+    "serviceStatus": "Service Status",
+    "uptime": "Uptime",
+    "responseTime": "Response Time",
+    "errorRate": "Error Rate",
+    "activeUsers": "Active Users",
+    "dailyTransactions": "Daily Transactions",
+    "totalVolume": "Total Volume",
+    "networkActivity": "Network Activity",
+    "alerts": "Alerts",
+    "notifications": "Notifications",
+    "maintenanceMode": "Maintenance Mode",
+    "systemUpdate": "System Update",
+    "performanceMetrics": "Performance Metrics",
+    "serviceInterruption": "Service Interruption",
+    "resolved": "Resolved",
+    "investigating": "Investigating",
+    "monitoring": "Monitoring"
   }
 }

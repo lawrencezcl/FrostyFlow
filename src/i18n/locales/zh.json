@@ -254,6 +254,7 @@
   },
   "help": {
     "helpCenter": "帮助中心",
+    "subtitle": "查找常见问题的答案，了解平台使用方法",
     "frequentlyAskedQuestions": "常见问题",
     "gettingStarted": "入门指南",
     "userGuide": "用户指南",
@@ -262,7 +263,85 @@
     "documentation": "文档",
     "community": "社区",
     "searchHelp": "搜索帮助...",
-    "noResultsFound": "未找到结果"
+    "noResultsFound": "未找到结果",
+    "faqs": {
+      "whatIsLiquidStaking": {
+        "question": "什么是流动性质押？",
+        "answer": "流动性质押是一种创新的DeFi机制，允许用户质押基础资产（如DOT、KSM）获得对应的流动性代币（如vDOT、vKSM）。这些流动性代币可以自由转移和交易，同时继续获得质押收益。"
+      },
+      "howToConnectWallet": {
+        "question": "如何连接钱包？",
+        "answer": "FrostyFlow支持多种钱包：Polkadot.js、MetaMask、Talisman。点击右上角的"连接钱包"按钮，选择您已安装的钱包扩展，按照提示完成连接即可。"
+      },
+      "stakingRisks": {
+        "question": "质押有什么风险？",
+        "answer": "质押风险包括：1) 智能合约风险 2) 验证者作恶风险 3) 网络风险 4) 流动性风险。请确保您充分理解这些风险后再进行质押操作。"
+      },
+      "howToRedeem": {
+        "question": "如何赎回质押的资产？",
+        "answer": "您可以选择两种赎回方式：1) 标准赎回：等待期7-28天，无额外费用 2) 即时赎回：立即到账，收取3-5%手续费。在"质押赎回"页面选择相应的流动性代币进行操作。"
+      },
+      "howEarningsCalculated": {
+        "question": "收益如何计算？",
+        "answer": "收益基于验证者的实际表现和网络参数动态计算。收益会自动复投到您的流动性代币中，您可以在资产总览页面查看实时收益情况。"
+      },
+      "supportedChains": {
+        "question": "支持哪些链？",
+        "answer": "FrostyFlow支持Bifrost生态的多条链，包括Bifrost Polkadot、Bifrost Kusama、Moonbeam、Moonriver等。系统会自动识别兼容的链网络。"
+      }
+    },
+    "guides": {
+      "beginnerGuide": {
+        "title": "新手指南",
+        "items": [
+          "1. 安装并设置钱包扩展",
+          "2. 连接钱包到FrostyFlow",
+          "3. 选择要质押的资产和数量",
+          "4. 确认交易并等待确认",
+          "5. 查看收到的流动性代币"
+        ]
+      },
+      "securityTips": {
+        "title": "安全须知",
+        "items": [
+          "务必验证网站URL的正确性",
+          "不要分享您的私钥或助记词",
+          "使用硬件钱包增强安全性",
+          "小额测试后再进行大额操作",
+          "定期备份钱包信息"
+        ]
+      },
+      "troubleshooting": {
+        "title": "常见问题解决",
+        "items": [
+          "钱包连接失败：检查扩展是否安装和启用",
+          "交易失败：检查余额和网络状态",
+          "收益显示异常：刷新页面或等待数据同步",
+          "赎回卡住：联系客服获得帮助",
+          "网络切换问题：手动添加网络配置"
+        ]
+      }
+    },
+    "support": {
+      "technicalSupport": "技术支持",
+      "contactUs": "联系我们",
+      "email": "邮箱: support@frostyflow.com",
+      "telegram": "Telegram: @FrostyFlowSupport",
+      "discord": "Discord: FrostyFlow Community",
+      "documentationResources": "文档资源",
+      "userManual": "用户手册",
+      "apiDocs": "API 文档",
+      "smartContractSource": "智能合约源码",
+      "securityAuditReport": "安全审计报告",
+      "communitySection": "社区",
+      "githubRepo": "GitHub Repository",
+      "officialBlog": "官方博客",
+      "twitter": "Twitter @FrostyFlow",
+      "mediumTechSharing": "Medium 技术分享",
+      "version": "版本 1.0.0",
+      "lastUpdated": "最后更新: 2024-01-15",
+      "bifrostEcosystemSupport": "Bifrost 生态支持"
+    }
   },
   "settings": {
     "settings": "设置",
@@ -301,5 +380,109 @@
     "copiedToClipboard": "已复制到剪贴板！",
     "emailVerified": "邮箱验证成功！",
     "accountCreated": "账户创建成功！"
+  },
+  "slpx": {
+    "slpxOneClickStaking": "SLPx 一键质押",
+    "description": "优化的一键流动性质押解决方案",
+    "selectAsset": "选择资产",
+    "enterAmount": "输入数量",
+    "estimatedReturn": "预期收益",
+    "stakingPeriod": "质押期间",
+    "oneClickStake": "一键质押",
+    "autoCompound": "自动复投",
+    "bestValidators": "最佳验证者",
+    "recommendedPools": "推荐池",
+    "stakingHistory": "质押历史",
+    "rewards": "奖励",
+    "apy": "年化收益率",
+    "totalStaked": "总质押量",
+    "availableBalance": "可用余额"
+  },
+  "monitoring": {
+    "multiChainAssetMonitoring": "多链资产监控",
+    "realTimeTracking": "实时追踪",
+    "portfolioOverview": "投资组合概览",
+    "assetDistribution": "资产分布",
+    "performanceMetrics": "性能指标",
+    "chainActivity": "链活动",
+    "transactionHistory": "交易历史",
+    "alerts": "警报",
+    "notifications": "通知",
+    "riskAnalysis": "风险分析",
+    "yieldComparison": "收益比较",
+    "networkStatus": "网络状态",
+    "connectedChains": "已连接链",
+    "syncStatus": "同步状态",
+    "lastSync": "最后同步"
+  },
+  "bridge": {
+    "crossChainBridge": "跨链桥",
+    "bridgeTitle": "跨链资产转移",
+    "description": "在不同区块链网络间无缝转移资产",
+    "selectSourceChain": "选择源链",
+    "selectTargetChain": "选择目标链",
+    "selectAsset": "选择资产",
+    "enterAmount": "输入数量",
+    "supportedAssets": "支持的资产",
+    "getQuote": "获取报价",
+    "bridgeFee": "跨链费用",
+    "estimatedTime": "预计时间",
+    "confirmBridge": "确认跨链",
+    "bridgeHistory": "跨链历史",
+    "transactionStatus": "交易状态",
+    "trackTransaction": "追踪交易",
+    "swapChains": "交换链",
+    "minAmount": "最小数量",
+    "maxAmount": "最大数量",
+    "processingTime": "处理时间",
+    "networkFee": "网络费用",
+    "totalFee": "总费用",
+    "youWillReceive": "您将收到",
+    "recipientAddress": "接收地址",
+    "bridgeSuccess": "跨链转移成功",
+    "bridgeFailed": "跨链转移失败",
+    "insufficientLiquidity": "流动性不足",
+    "bridgeInProgress": "跨链转移进行中"
+  },
+  "network": {
+    "enhancedNetworkSupport": "增强网络支持",
+    "supportedNetworks": "支持的网络",
+    "networkStatus": "网络状态",
+    "connectionStatus": "连接状态",
+    "latency": "延迟",
+    "blockHeight": "区块高度",
+    "activeValidators": "活跃验证者",
+    "networkMetrics": "网络指标",
+    "peers": "对等节点",
+    "syncProgress": "同步进度",
+    "chainId": "链ID",
+    "rpcEndpoint": "RPC端点",
+    "testnet": "测试网",
+    "mainnet": "主网",
+    "switchNetwork": "切换网络",
+    "addNetwork": "添加网络",
+    "networkConfiguration": "网络配置"
+  },
+  "status": {
+    "realtimeStatusTracking": "实时状态追踪",
+    "transactionTracking": "交易追踪",
+    "systemHealth": "系统健康",
+    "serviceStatus": "服务状态",
+    "uptime": "正常运行时间",
+    "responseTime": "响应时间",
+    "errorRate": "错误率",
+    "activeUsers": "活跃用户",
+    "dailyTransactions": "每日交易",
+    "totalVolume": "总交易量",
+    "networkActivity": "网络活动",
+    "alerts": "警报",
+    "notifications": "通知",
+    "maintenanceMode": "维护模式",
+    "systemUpdate": "系统更新",
+    "performanceMetrics": "性能指标",
+    "serviceInterruption": "服务中断",
+    "resolved": "已解决",
+    "investigating": "调查中",
+    "monitoring": "监控中"
   }
 }

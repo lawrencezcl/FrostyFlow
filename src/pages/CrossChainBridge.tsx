@@ -14,11 +14,13 @@ import {
 } from '../redux/slices/crossChainSlice';
 import { crossChainBridge } from '../services';
 import { BridgeQuote, BridgeTransaction } from '../types/bridge';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const CrossChainBridge: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const {
     supportedChains,
@@ -66,7 +68,7 @@ const CrossChainBridge: React.FC = () => {
       setQuote(quoteResult);
     } catch (error) {
       console.error('Failed to get quote:', error);
-      dispatch(setError('获取报价失败'));
+      dispatch(setError(t('bridge.bridgeFailed')));
     } finally {
       setIsGettingQuote(false);
     }
@@ -80,7 +82,7 @@ const CrossChainBridge: React.FC = () => {
 
     const amount = parseFloat(bridgeAmount);
     if (isNaN(amount) || amount <= 0) {
-      dispatch(setError('请输入有效的金额'));
+      dispatch(setError(t('errors.invalidAmount')));
       return;
     }
 
@@ -108,7 +110,7 @@ const CrossChainBridge: React.FC = () => {
       });
 
     } catch (error: any) {
-      dispatch(setError(error.message || '桥接执行失败'));
+      dispatch(setError(error.message || t('bridge.bridgeFailed')));
     } finally {
       dispatch(setLoading(false));
     }
@@ -137,7 +139,7 @@ const CrossChainBridge: React.FC = () => {
     const completedSteps = activeBridgeTransaction.steps.filter(step => step.status === 'completed').length;
 
     return (
-      <Card title="桥接进度" style={{ marginTop: 16 }}>
+      <Card title={t('bridge.transactionStatus')} style={{ marginTop: 16 }}>
         <Progress 
           percent={activeBridgeTransaction.progress} 
           status={activeBridgeTransaction.status === 'failed' ? 'exception' : 'active'}
@@ -183,18 +185,18 @@ const CrossChainBridge: React.FC = () => {
 
   return (
     <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
-      <Title level={2}>跨链桥接</Title>
-      <Text type="secondary">在不同区块链网络之间安全转移资产</Text>
+      <Title level={2}>{t('bridge.crossChainBridge')}</Title>
+      <Text type="secondary">{t('bridge.description')}</Text>
 
       <Card style={{ marginTop: 24 }}>
         <Row gutter={[16, 16]}>
           {/* 源链选择 */}
           <Col span={11}>
             <div>
-              <Text strong>源链</Text>
+              <Text strong>{t('bridge.selectSourceChain')}</Text>
               <Select
                 style={{ width: '100%', marginTop: 8 }}
-                placeholder="选择源链"
+                placeholder={t('bridge.selectSourceChain')}
                 value={selectedSourceChain}
                 onChange={(value) => dispatch(setSourceChain(value))}
               >

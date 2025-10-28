@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const DEPLOYED_URL = 'https://frostyflow-ep6ejgsi4-lawrencezcls-projects.vercel.app';
+const DEPLOYED_URL = 'https://frostyflow-fqwudyfyd-lawrencezcls-projects.vercel.app';
 
 test.describe('FrostyFlow Deployed Site Tests', () => {
 
