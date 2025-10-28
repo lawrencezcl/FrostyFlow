@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
 import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
-import { GasEstimate, ApiResponse } from '@/types';
+import { GasEstimate, ApiResponse, WalletAccount } from '../types';
 
 class PolkadotApiService {
   private api: ApiPromise | null = null;
@@ -102,7 +102,7 @@ class PolkadotApiService {
   /**
    * 获取钱包账户列表
    */
-  async getAccounts(): Promise<ApiResponse<InjectedAccountWithMeta[]>> {
+  async getAccounts(): Promise<ApiResponse<WalletAccount[]>> {
     try {
       const accounts = await web3Accounts();
       
@@ -114,9 +114,14 @@ class PolkadotApiService {
         };
       }
 
+      const walletAccounts: WalletAccount[] = accounts.map(account => ({
+        ...account,
+        source: account.meta.source
+      }));
+
       return {
         success: true,
-        data: accounts,
+        data: walletAccounts,
         message: `找到${accounts.length}个账户`,
       };
     } catch (error) {
@@ -223,15 +228,40 @@ class PolkadotApiService {
         throw new Error('API not initialized');
       }
 
-      // 模拟获取余额
-      const balanceFormatted = 100.5; // 模拟余额
+      // 查询账户余额
+      const accountInfo = await this.api.query.system.account(address);
+
+      if (!accountInfo) {
+        throw new Error('无法查询账户余额');
+      }
+
+      // 获取链的代币精度
+      const chainDecimals = this.api.registry.chainDecimals[0] || 12;
+      const chainToken = this.api.registry.chainTokens[0] || 'Unit';
+
+      // 转换余额为可读格式
+      const accountData = (accountInfo as any).data;
+      const freeBalance = accountData.free.toBigInt();
+      const reservedBalance = accountData.reserved.toBigInt();
+      const totalBalance = freeBalance + reservedBalance;
+
+      const freeFormatted = Number(freeBalance) / Math.pow(10, chainDecimals);
+      const reservedFormatted = Number(reservedBalance) / Math.pow(10, chainDecimals);
+      const totalFormatted = Number(totalBalance) / Math.pow(10, chainDecimals);
 
       return {
         success: true,
         data: {
-          free: balanceFormatted,
-          reserved: 0,
-          total: balanceFormatted,
+          free: freeFormatted,
+          reserved: reservedFormatted,
+          total: totalFormatted,
+          token: chainToken,
+          decimals: chainDecimals,
+          raw: {
+            free: freeBalance.toString(),
+            reserved: reservedBalance.toString(),
+            total: totalBalance.toString(),
+          }
         },
         message: '成功获取账户余额',
       };

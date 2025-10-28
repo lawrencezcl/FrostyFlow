@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet, X, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
@@ -10,18 +11,27 @@ import { WalletType, WalletAccount } from '../types';
 import { Button, Text, Flex } from '../styles/components';
 
 // Styled Components
-const WalletButton = styled(Button)<{ connected: boolean }>`
+interface WalletButtonProps {
+  connected?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}
+
+const WalletButton = styled(Button).withConfig({
+  shouldForwardProp: (prop) => prop !== 'connected',
+})<WalletButtonProps>`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
   position: relative;
   overflow: hidden;
-  
+
   ${({ connected, theme }) => connected && `
     background: ${theme.colors.success}20;
     color: ${theme.colors.success};
     border-color: ${theme.colors.success};
-    
+
     &:hover {
       background: ${theme.colors.success}30;
       border-color: ${theme.colors.success};
@@ -153,6 +163,7 @@ interface WalletDetection {
 }
 
 export const ModernWalletConnect: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const wallet = useAppSelector((state: any) => state.wallet);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -170,21 +181,29 @@ export const ModernWalletConnect: React.FC = () => {
 
   const detectWallets = async () => {
     try {
+      console.log('Starting wallet detection...');
+
       // Detect Polkadot.js extension
       const polkadotResult = await polkadotApiService.enableExtension();
       const hasPolkadot = polkadotResult.success;
+      console.log('Polkadot.js detection result:', polkadotResult);
 
       // Detect MetaMask
       const hasMetaMask = typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask;
+      console.log('MetaMask detected:', hasMetaMask);
 
       // Detect Talisman
       const hasTalisman = typeof window.talisman !== 'undefined';
+      console.log('Talisman detected:', hasTalisman);
 
-      setWalletDetection({
+      const detection = {
         polkadot: !!hasPolkadot,
         metamask: !!hasMetaMask,
         talisman: !!hasTalisman,
-      });
+      };
+
+      console.log('Final wallet detection:', detection);
+      setWalletDetection(detection);
     } catch (error) {
       console.error('Wallet detection failed:', error);
     }
@@ -193,8 +212,8 @@ export const ModernWalletConnect: React.FC = () => {
   const wallets: WalletOptionData[] = [
     {
       type: 'polkadot' as WalletType,
-      name: 'Polkadot.js',
-      description: '适配Passet Hub链，推荐使用',
+      name: t('wallet.polkadot'),
+      description: 'Recommended for Passet Hub chain',
       icon: 'P',
       installUrl: 'https://polkadot.js.org/extension/',
       supportedChains: ['Bifrost Passet Hub', 'Westend', 'Kusama'],
@@ -202,8 +221,8 @@ export const ModernWalletConnect: React.FC = () => {
     },
     {
       type: 'metamask' as WalletType,
-      name: 'MetaMask',
-      description: '适配Moonbase Alpha链',
+      name: t('wallet.metamask'),
+      description: 'Compatible with Moonbase Alpha chain',
       icon: 'M',
       installUrl: 'https://metamask.io/download/',
       supportedChains: ['Moonbase Alpha', 'Ethereum'],
@@ -211,8 +230,8 @@ export const ModernWalletConnect: React.FC = () => {
     },
     {
       type: 'talisman' as WalletType,
-      name: 'Talisman',
-      description: '兼容Polkadot生态多链',
+      name: t('wallet.talisman'),
+      description: 'Multi-chain compatible with Polkadot ecosystem',
       icon: 'T',
       installUrl: 'https://talisman.xyz/',
       supportedChains: ['Bifrost', 'Polkadot', 'Kusama'],
@@ -222,102 +241,50 @@ export const ModernWalletConnect: React.FC = () => {
 
   const handleConnect = async (walletType: WalletType) => {
     setIsLoading(true);
-    
     try {
-      let account: WalletAccount | null = null;
+      console.log(`Attempting to connect to ${walletType} wallet`);
+      const accountsResult = await polkadotApiService.getAccounts();
+      console.log('Accounts result:', accountsResult);
 
-      switch (walletType) {
-        case 'polkadot':
-          // Enable Polkadot extension and get accounts
-          const enableResult = await polkadotApiService.enableExtension();
-          if (!enableResult.success) {
-            throw new Error(enableResult.error || 'Failed to enable Polkadot extension');
-          }
+      if (accountsResult.success && accountsResult.data) {
+        console.log('Available accounts:', accountsResult.data);
 
-          const accountsResult = await polkadotApiService.getAccounts();
-          if (!accountsResult.success) {
-            throw new Error(accountsResult.error || 'Failed to get accounts');
-          }
+        // For Polkadot.js, accept any account since it's the main wallet
+        let selectedAccount = null;
+        if (walletType === 'polkadot') {
+          // Find any account that has a Polkadot.js source or no source (default)
+          selectedAccount = accountsResult.data.find(
+            (account) => !account.source || account.source === 'polkadot-js' || account.source === 'polkadot'
+          );
+        } else {
+          // For other wallet types, match by source
+          selectedAccount = accountsResult.data.find(
+            (account) => account.source === walletType
+          );
+        }
 
-          // Use first account (in real implementation, should show account selector)
-          if (!accountsResult.data || accountsResult.data.length === 0) {
-            throw new Error('No accounts found in wallet');
-          }
-          const selectedAccount = accountsResult.data[0];
-          account = {
-            address: selectedAccount.address,
-            name: selectedAccount.meta.name || 'Polkadot Account',
-            source: 'polkadot',
-          };
-          break;
+        console.log('Selected account:', selectedAccount);
 
-        case 'metamask':
-          // MetaMask connection logic
-          if (typeof window.ethereum !== 'undefined') {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            account = {
-              address: accounts[0],
-              name: 'MetaMask Account',
-              source: 'metamask',
-            };
-          } else {
-            throw new Error('MetaMask not installed');
-          }
-          break;
-
-        case 'talisman':
-          // Talisman connection logic
-          if (typeof window.talisman !== 'undefined' && window.talisman.ethereum) {
-            // Talisman uses similar API to Polkadot.js
-            const accounts = await window.talisman.ethereum.request({ method: 'eth_requestAccounts' });
-            if (!accounts || accounts.length === 0) {
-              throw new Error('No accounts found in Talisman wallet');
-            }
-            account = {
-              address: accounts[0],
-              name: 'Talisman Account',
-              source: 'talisman',
-            };
-          } else {
-            throw new Error('Talisman not installed');
-          }
-          break;
-
-        default:
-          throw new Error('Unsupported wallet type');
+        if (selectedAccount) {
+          dispatch(
+            setWalletConnected({
+              account: selectedAccount,
+              walletType: walletType,
+            })
+          );
+          toast.success(`Connected to ${selectedAccount.name || 'wallet'}`);
+          setIsModalVisible(false);
+        } else {
+          console.error('No matching account found for wallet type:', walletType);
+          toast.error(`No accounts found for ${walletType}. Please create an account in your wallet.`);
+        }
+      } else {
+        console.error('No accounts found:', accountsResult);
+        toast.error('No accounts found. Please create an account in your wallet.');
       }
-
-      if (account) {
-        dispatch(setWalletConnected({
-          account,
-          walletType,
-        }));
-
-        toast.success('钱包连接成功', {
-          icon: '👏',
-          style: {
-            background: 'var(--success-bg)',
-            color: 'var(--success-text)',
-          }
-        });
-        setIsModalVisible(false);
-      }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Wallet connection failed:', error);
-      
-      let errorMessage = '钱包连接失败';
-      if (error.message?.includes('not installed')) {
-        errorMessage = '钱包未安装，请先安装钱包扩展';
-      } else if (error.message?.includes('accounts')) {
-        errorMessage = '未找到账户，请在钱包中创建或导入账户';
-      } else if (error.message?.includes('enable')) {
-        errorMessage = '请启用钱包扩展权限';
-      }
-      
-      toast.error(errorMessage, {
-        icon: '⚠️',
-        duration: 4000,
-      });
+      toast.error('Failed to connect wallet. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -368,12 +335,12 @@ export const ModernWalletConnect: React.FC = () => {
         {isLoading ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: 14, height: 14, border: '2px solid currentColor', borderTop: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            连接中...
+            {t('common.loading')}
           </div>
         ) : (
           <>
             <Wallet size={18} />
-            连接钱包
+            {t('wallet.connectWallet')}
           </>
         )}
       </WalletButton>
@@ -403,10 +370,10 @@ export const ModernWalletConnect: React.FC = () => {
               <Flex direction="column" gap="24px">
                 <div>
                   <Text size="lg" weight="semibold">
-                    选择钱包
+                    {t('wallet.selectWallet')}
                   </Text>
                   <Text size="sm" color="secondary" style={{ marginTop: '8px' }}>
-                    请选择兼容的钱包类型进行连接
+                    {t('wallet.selectWallet')}
                   </Text>
                 </div>
                 

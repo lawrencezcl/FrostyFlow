@@ -2,6 +2,8 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { Asset, AssetState } from '../../types';
 import { testnetApiService } from '../../services/testnetApiService';
 import { coinGeckoService } from '../../services/coinGecko';
+import { bifrostService } from '../../services/bifrostService';
+import { bifrostSdkRealService } from '../../services/bifrostSdkReal';
 
 const initialState: AssetState = {
   assets: [],
@@ -12,35 +14,33 @@ const initialState: AssetState = {
   isLoading: false,
 };
 
-// Async thunk for staking/minting - use testnet service in testnet mode
+// Async thunk for fetching initial asset data
+export const fetchInitialData = createAsyncThunk(
+  'asset/fetchInitialData',
+  async (_, { getState }) => {
+    const { wallet, chain } = getState() as { wallet: any; chain: any };
+    if (wallet.address) {
+      const assets = await bifrostService.getBalances(wallet.address, chain.chain.id);
+      return assets;
+    }
+    return [];
+  }
+);
+
+// Async thunk for staking/minting
 export const stakeMint = createAsyncThunk(
   'asset/stakeMint',
   async (params: { asset: string; amount: number; gasMode: string; chainId?: string; address?: string }) => {
-    const { asset, amount, gasMode, chainId, address } = params;
-    
-    if (process.env.REACT_APP_ENVIRONMENT === 'testnet' && chainId && address) {
-      // Use real testnet API
-      const result = await testnetApiService.stakeMint(chainId, address, asset, amount, gasMode);
-      return {
-        asset,
-        amount,
-        liquidTokens: result.liquidTokens,
-        txHash: result.txHash,
-        success: result.success,
-        message: result.message
-      };
-    } else {
-      // Simulate staking operation for development
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return {
-        asset,
-        amount,
-        liquidTokens: amount * 0.98,
-        txHash: '0x' + Math.random().toString(16).substr(2, 64),
-        success: true,
-        message: 'Staking simulation completed'
-      };
-    }
+    const { asset, amount, address } = params;
+    const result = await bifrostService.stake(address!, asset, amount);
+    return {
+      asset,
+      amount,
+      liquidTokens: amount * 0.98, // This should be updated with the actual amount from the event
+      txHash: result.data,
+      success: result.success,
+      message: result.message
+    };
   }
 );
 
@@ -118,33 +118,17 @@ export const updateAssetPrices = createAsyncThunk(
 export const initiateRedeem = createAsyncThunk(
   'asset/initiateRedeem',
   async (params: { asset: string; amount: number; chainId?: string; address?: string }) => {
-    const { asset, amount, chainId, address } = params;
-    
-    if (process.env.REACT_APP_ENVIRONMENT === 'testnet' && chainId && address) {
-      // Use real testnet API
-      const result = await testnetApiService.initiateRedeem(chainId, address, asset, amount);
-      return {
-        asset,
-        amount,
-        estimatedReceiveAmount: result.estimatedReceiveAmount,
-        txHash: result.txHash,
-        success: result.success,
-        message: result.message,
-        unlockTime: result.unlockTime
-      };
-    } else {
-      // Simulate redemption
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return {
-        asset,
-        amount,
-        estimatedReceiveAmount: amount * 0.95,
-        txHash: '0x' + Math.random().toString(16).substr(2, 64),
-        success: true,
-        message: 'Redemption simulation completed',
-        unlockTime: Date.now() + 28 * 24 * 60 * 60 * 1000
-      };
-    }
+    const { asset, amount, address } = params;
+    const result = await bifrostService.redeem(address!, asset, amount);
+    return {
+      asset,
+      amount,
+      estimatedReceiveAmount: amount * 0.95, // This should be updated with the actual amount from the event
+      txHash: result.data,
+      success: result.success,
+      message: result.message,
+      unlockTime: Date.now() + 28 * 24 * 60 * 60 * 1000 // This should be updated with the actual unlock time from the event
+    };
   }
 );
 
@@ -314,6 +298,17 @@ const assetSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchInitialData.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(fetchInitialData.fulfilled, (state, action: PayloadAction<Asset[]>) => {
+        state.assets = action.payload;
+        assetSlice.caseReducers.calculateTotals(state);
+        state.isLoading = false;
+      })
+      .addCase(fetchInitialData.rejected, (state) => {
+        state.isLoading = false;
+      })
       .addCase(fetchAssetPrices.pending, (state) => {
         state.isLoading = true;
       })

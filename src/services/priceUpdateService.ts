@@ -1,5 +1,6 @@
 import { coinGeckoService } from './coinGecko';
-import { store } from '../redux/store';
+import type { Store } from '@reduxjs/toolkit';
+import type { RootState } from '../redux/store';
 
 export interface PriceUpdateConfig {
   enabled: boolean;
@@ -13,9 +14,17 @@ export class PriceUpdateService {
   private config: PriceUpdateConfig;
   private retryCount = 0;
   private isRunning = false;
+  private storeInstance: Store<RootState> | null = null;
 
   constructor(config: PriceUpdateConfig) {
     this.config = config;
+  }
+
+  /**
+   * 设置 store 实例（用于避免循环依赖）
+   */
+  setStore(store: Store<RootState>): void {
+    this.storeInstance = store;
   }
 
   /**
@@ -63,8 +72,13 @@ export class PriceUpdateService {
    * 更新价格
    */
   private async updatePrices(): Promise<void> {
+    if (!this.storeInstance) {
+      console.warn('Store not initialized, skipping price update');
+      return;
+    }
+
     try {
-      const state = store.getState();
+      const state = this.storeInstance.getState();
       const { assets } = state.asset;
       
       if (assets.length === 0) {
@@ -94,7 +108,7 @@ export class PriceUpdateService {
         });
 
         // 更新Redux状态
-        store.dispatch({
+        this.storeInstance.dispatch({
           type: 'asset/updateAssetPricesAndChanges',
           payload: priceUpdates,
         });

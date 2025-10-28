@@ -115,7 +115,10 @@ export const Card = styled.div<{
 `;
 
 // 按钮组件
-export const Button = styled.button<{
+export const Button = styled.button.withConfig({
+  shouldForwardProp: (prop) =>
+    !['variant', 'size', 'fullWidth'].includes(prop),
+})<{
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
@@ -338,7 +341,10 @@ export const Grid = styled.div<{ columns?: number; gap?: string }>`
 `;
 
 // Flex布局
-export const Flex = styled.div<{
+export const Flex = styled.div.withConfig({
+  shouldForwardProp: (prop) =>
+    !['direction', 'align', 'justify', 'gap', 'wrap'].includes(prop),
+})<{
   direction?: 'row' | 'column';
   align?: 'flex-start' | 'center' | 'flex-end' | 'stretch';
   justify?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around';
@@ -354,7 +360,10 @@ export const Flex = styled.div<{
 `;
 
 // 文本组件
-export const Text = styled.span<{
+export const Text = styled.span.withConfig({
+  shouldForwardProp: (prop) =>
+    !['size', 'weight', 'color'].includes(prop),
+})<{
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   weight?: 'normal' | 'medium' | 'semibold' | 'bold';
   color?: 'primary' | 'secondary' | 'tertiary' | 'inverse';

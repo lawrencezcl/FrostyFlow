@@ -1,25 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Home, 
-  Coins, 
-  ArrowRightLeft, 
-  HelpCircle, 
-  Settings, 
-  Wallet, 
+import {
+  Home,
+  Coins,
+  ArrowRightLeft,
+  HelpCircle,
+  Settings,
+  Wallet,
   LogOut,
   Sun,
   Moon,
   Menu as MenuIcon,
-  X
+  X,
+  Activity,
+  Zap,
+  BarChart3,
+  TrendingUp,
+  Eye
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { setWalletDisconnected } from '../redux/slices/walletSlice';
 import { useTheme } from '../styles/ThemeProvider';
 import { Container, Card, Button, Text, Flex, Badge } from '../styles/components';
-import WalletConnect from './WalletConnect';
+import ModernWalletConnect from './ModernWalletConnect';
+import LanguageSwitcher from './LanguageSwitcher';
+import { polkadotApiService } from '../services/polkadotApi';
 
 // Type definitions
 interface LayoutProps {
@@ -39,7 +47,13 @@ const LayoutContainer = styled.div`
   background: ${({ theme }) => theme.colors.background};
 `;
 
-const Sidebar = styled(motion.nav)<{ isOpen: boolean }>`
+interface SidebarProps {
+  isOpen: boolean;
+}
+
+const Sidebar = styled(motion.nav).withConfig({
+  shouldForwardProp: (prop) => prop !== 'isOpen',
+})<SidebarProps>`
   width: ${({ isOpen }) => isOpen ? '240px' : '80px'};
   background: ${({ theme }) => theme.colors.surface};
   border-right: 1px solid ${({ theme }) => theme.colors.border};
@@ -56,7 +70,14 @@ const Sidebar = styled(motion.nav)<{ isOpen: boolean }>`
   }
 `;
 
-const MainContent = styled.main<{ sidebarOpen: boolean }>`
+interface MainContentProps {
+  sidebarOpen: boolean;
+  children: React.ReactNode;
+}
+
+const MainContent = styled('main').withConfig({
+  shouldForwardProp: (prop) => prop !== 'sidebarOpen',
+})<MainContentProps>`
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -83,7 +104,13 @@ const Logo = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-const LogoText = styled.h1<{ collapsed: boolean }>`
+interface LogoTextProps {
+  collapsed: boolean;
+}
+
+const LogoText = styled('h1').withConfig({
+  shouldForwardProp: (prop) => prop !== 'collapsed',
+})<LogoTextProps>`
   background: ${({ theme }) => theme.colors.gradient.primary};
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -101,7 +128,14 @@ const Navigation = styled.nav`
   padding: ${({ theme }) => theme.spacing.md};
 `;
 
-const NavItem = styled(motion.div)<{ active: boolean; collapsed: boolean }>`
+interface NavItemProps {
+  active: boolean;
+  collapsed: boolean;
+}
+
+const NavItem = styled(motion.div).withConfig({
+  shouldForwardProp: (prop) => prop !== 'active' && prop !== 'collapsed',
+})<NavItemProps>`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
@@ -121,7 +155,7 @@ const NavItem = styled(motion.div)<{ active: boolean; collapsed: boolean }>`
   `}
 
   &:hover {
-    background: ${({ active, theme }) => 
+    background: ${({ active, theme }) =>
       active ? theme.colors.gradient.primary : theme.colors.surfaceHover};
     transform: translateX(4px);
   }
@@ -132,7 +166,13 @@ const NavItem = styled(motion.div)<{ active: boolean; collapsed: boolean }>`
   }
 `;
 
-const NavText = styled.span<{ collapsed: boolean }>`
+interface NavTextProps {
+  collapsed: boolean;
+}
+
+const NavText = styled('span').withConfig({
+  shouldForwardProp: (prop) => prop !== 'collapsed',
+})<NavTextProps>`
   font-weight: 500;
   opacity: ${({ collapsed }) => collapsed ? 0 : 1};
   transition: opacity ${({ theme }) => theme.animations.normal} ease;
@@ -185,46 +225,105 @@ const Overlay = styled(motion.div)`
 `;
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
   const { theme, mode, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   const { isConnected, account } = useAppSelector(state => state.wallet);
   const { activeChain } = useAppSelector(state => state.chain);
   
-  // 模拟数据
-  const balance = isConnected ? '100.5' : '0';
+  // Real balance data - will be fetched from blockchain
+  const [balance, setBalance] = useState('0');
   const chainName = activeChain?.chainName || activeChain?.name || '未连接';
-  const nativeToken = 'DOT';
+  const nativeToken = activeChain?.nativeToken || 'DOT';
+
+  // Fetch real balance when wallet is connected
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (isConnected && account?.address && activeChain?.rpc) {
+        try {
+          // Connect to the active chain's RPC
+          await polkadotApiService.connect(activeChain.rpc);
+
+          // Get real balance from blockchain
+          const balanceResult = await polkadotApiService.getAccountBalance(account.address);
+
+          if (balanceResult.success && balanceResult.data) {
+            setBalance(balanceResult.data.free.toFixed(4));
+          } else {
+            setBalance('0');
+          }
+        } catch (error) {
+          console.error('Failed to fetch balance:', error);
+          setBalance('0');
+        }
+      } else {
+        setBalance('0');
+      }
+    };
+
+    fetchBalance();
+
+    // Set up periodic balance updates
+    const interval = setInterval(fetchBalance, 10000); // Update every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [isConnected, account?.address, activeChain?.rpc]);
 
   const menuItems: NavItemType[] = [
     {
       key: '/',
       icon: <Home />,
-      label: '资产总览'
+      label: t('navigation.dashboard')
     },
     {
       key: '/staking',
       icon: <Coins />,
-      label: '质押铸造'
+      label: t('navigation.staking')
     },
     {
       key: '/redemption',
       icon: <ArrowRightLeft />,
-      label: '质押赎回'
+      label: t('navigation.redemption')
+    },
+    {
+      key: '/monitoring',
+      icon: <Activity />,
+      label: t('navigation.monitoring')
+    },
+    {
+      key: '/slpx',
+      icon: <Zap />,
+      label: t('navigation.slpx')
+    },
+    {
+      key: '/recommendations',
+      icon: <TrendingUp />,
+      label: t('navigation.recommendations')
+    },
+    {
+      key: '/analytics',
+      icon: <BarChart3 />,
+      label: t('navigation.analytics')
+    },
+    {
+      key: '/status',
+      icon: <Eye />,
+      label: t('navigation.status')
     },
     {
       key: '/help',
       icon: <HelpCircle />,
-      label: '帮助中心'
+      label: t('navigation.help')
     },
     {
       key: '/settings',
       icon: <Settings />,
-      label: '系统设置'
+      label: t('navigation.settings')
     }
   ];
 
@@ -353,14 +452,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Flex>
               
               <Flex align="center" gap="12px">
+                <LanguageSwitcher />
+
                 <ThemeToggle
                   variant="ghost"
                   onClick={toggleTheme}
                 >
                   {mode === 'light' ? <Moon size={18} /> : <Sun size={18} />}
                 </ThemeToggle>
-                
-                {!isConnected && <WalletConnect />}
+
+                {!isConnected && <ModernWalletConnect />}
               </Flex>
             </Flex>
           </Container>

@@ -22,9 +22,13 @@ class EmailService {
   
   constructor() {
     // 在实际应用中，这应该从环境变量获取
-    if (process.env.REACT_APP_SENDGRID_API_KEY) {
+    // 开发环境下跳过 SendGrid 配置
+    if (process.env.REACT_APP_SENDGRID_API_KEY && 
+        process.env.REACT_APP_SENDGRID_API_KEY.startsWith('SG.')) {
       this.apiKey = process.env.REACT_APP_SENDGRID_API_KEY;
       sgMail.setApiKey(this.apiKey);
+    } else {
+      console.log('SendGrid API key 未配置或格式不正确，邮件服务将在模拟模式下运行');
     }
   }
 

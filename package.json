@@ -5,9 +5,9 @@
   "main": "index.js",
   "homepage": ".",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
@@ -15,6 +15,8 @@
     "test:wallet": "node scripts/test-wallet.js",
     "test:testnet": "npm run test:connections && npm run test:wallet",
     "dev:testnet": "REACT_APP_ENVIRONMENT=testnet npm start",
+    "test:unit": "jest tests/unit --passWithNoTests",
+    "test:integration": "jest tests/integration --passWithNoTests",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
@@ -25,6 +27,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.3.7",
+    "@ant-design/plots": "^2.6.6",
     "@antv/mcp-server-chart": "^0.9.0-beta.1",
     "@modelcontextprotocol/sdk": "^1.18.0",
     "@playwright/mcp": "^0.0.37",
@@ -47,10 +50,13 @@
     "echarts-for-react": "^3.0.2",
     "figma-developer-mcp": "^0.6.0",
     "framer-motion": "^12.23.13",
+    "i18next": "^25.6.0",
+    "i18next-browser-languagedetector": "^8.2.0",
     "lucide-react": "^0.544.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
+    "react-i18next": "^16.2.1",
     "react-redux": "^9.1.0",
     "react-router-dom": "^6.22.3",
     "react-scripts": "5.0.1",
@@ -59,10 +65,12 @@
     "web-vitals": "^3.5.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0",
+    "@jest/globals": "^29.7.0",
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^15.0.2",
     "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.23",
@@ -74,7 +82,12 @@
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.34.1",
-    "eslint-plugin-react-hooks": "^4.6.0"
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "playwright": "^1.55.0",
+    "react-app-rewired": "^2.2.1",
+    "ts-jest": "^29.1.2"
   },
   "browserslist": {
     "production": [
