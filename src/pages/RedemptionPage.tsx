@@ -3,15 +3,17 @@ import { Card, Table, Button, Progress, Tag, Typography, Space, Modal, Form, Inp
 import { SwapOutlined, ClockCircleOutlined, CheckCircleOutlined, ExclamationCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { initiateRedeem, claimRedeem } from '../redux/slices/redeemSlice';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 
 const RedemptionPage: React.FC = () => {
+  const { t } = useTranslation();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<string>('');
   const [redeemAmount, setRedeemAmount] = useState<number | null>(null);
   const [redeemType, setRedeemType] = useState<'instant' | 'standard'>('standard');
-  
+
   const dispatch = useAppDispatch();
   const { redeems } = useAppSelector(state => state.redeem);
   const { isConnected } = useAppSelector(state => state.wallet);
@@ -22,7 +24,7 @@ const RedemptionPage: React.FC = () => {
 
   const columns = [
     {
-      title: '资产',
+      title: t('redemption.asset'),
       dataIndex: 'asset',
       key: 'asset',
       render: (asset: string) => (
@@ -44,38 +46,38 @@ const RedemptionPage: React.FC = () => {
       )
     },
     {
-      title: '赎回数量',
+      title: t('redemption.redeemAmountLabel'),
       dataIndex: 'amount',
       key: 'amount',
       render: (amount: number) => `${(amount || 0).toFixed(6)}`
     },
     {
-      title: '类型',
+      title: t('redemption.type'),
       dataIndex: 'type',
       key: 'type',
       render: (type: 'instant' | 'standard') => (
         <Tag color={type === 'instant' ? 'orange' : 'blue'}>
-          {(type || 'standard') === 'instant' ? '即时赎回' : '标准赎回'}
+          {(type || 'standard') === 'instant' ? t('redemption.instantRedeem') : t('redemption.standardRedeem')}
         </Tag>
       )
     },
     {
-      title: '状态',
+      title: t('redemption.status'),
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => {
         const statusConfig = {
-          pending: { color: 'orange', icon: <ClockCircleOutlined />, text: '处理中' },
-          processing: { color: 'blue', icon: <ClockCircleOutlined />, text: '赎回中' },
-          ready: { color: 'green', icon: <CheckCircleOutlined />, text: '可提取' },
-          completed: { color: 'green', icon: <CheckCircleOutlined />, text: '已完成' },
-          failed: { color: 'red', icon: <ExclamationCircleOutlined />, text: '失败' },
-          unlocking: { color: 'purple', icon: <ClockCircleOutlined />, text: '解锁中' }
+          pending: { color: 'orange', icon: <ClockCircleOutlined />, text: t('redemption.pending') },
+          processing: { color: 'blue', icon: <ClockCircleOutlined />, text: t('redemption.processing') },
+          ready: { color: 'green', icon: <CheckCircleOutlined />, text: t('redemption.ready') },
+          completed: { color: 'green', icon: <CheckCircleOutlined />, text: t('redemption.completed') },
+          failed: { color: 'red', icon: <ExclamationCircleOutlined />, text: t('redemption.failed') },
+          unlocking: { color: 'purple', icon: <ClockCircleOutlined />, text: t('redemption.unlocking') }
         };
-        const config = statusConfig[status as keyof typeof statusConfig] || { 
-          color: 'default', 
-          icon: <QuestionCircleOutlined />, 
-          text: status || '未知' 
+        const config = statusConfig[status as keyof typeof statusConfig] || {
+          color: 'default',
+          icon: <QuestionCircleOutlined />,
+          text: status || 'Unknown'
         };
         return (
           <Tag color={config.color} icon={config.icon}>
@@ -85,7 +87,7 @@ const RedemptionPage: React.FC = () => {
       }
     },
     {
-      title: '进度',
+      title: t('redemption.progress'),
       key: 'progress',
       render: (record: any) => {
         const progressMap = {
@@ -96,8 +98,8 @@ const RedemptionPage: React.FC = () => {
           failed: 0
         };
         return (
-          <Progress 
-            percent={progressMap[record.status as keyof typeof progressMap]} 
+          <Progress
+            percent={progressMap[record.status as keyof typeof progressMap]}
             size="small"
             status={record.status === 'failed' ? 'exception' : 'normal'}
           />
@@ -105,33 +107,33 @@ const RedemptionPage: React.FC = () => {
       }
     },
     {
-      title: '剩余时间',
+      title: t('redemption.remainingTime'),
       dataIndex: 'remainingTime',
       key: 'remainingTime',
       render: (time: string, record: any) => {
         if (record.status === 'completed' || record.status === 'ready') {
           return '-';
         }
-        return time || '计算中...';
+        return time || t('redemption.calculating');
       }
     },
     {
-      title: '操作',
+      title: t('redemption.actions'),
       key: 'actions',
       render: (record: any) => (
         <Space>
           {record.status === 'ready' && (
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               size="small"
               onClick={() => handleClaim(record.id)}
             >
-              提取资产
+              {t('redemption.claimAssets')}
             </Button>
           )}
           {record.status === 'processing' && (
             <Button size="small" disabled>
-              等待中
+              {t('redemption.waiting')}
             </Button>
           )}
         </Space>
@@ -141,31 +143,31 @@ const RedemptionPage: React.FC = () => {
 
   const handleRedeem = async () => {
     if (!selectedAsset || !redeemAmount) return;
-    
+
     try {
       await dispatch(initiateRedeem({
         asset: selectedAsset,
         amount: redeemAmount,
         type: redeemType
       }));
-      
+
       setIsModalVisible(false);
       setSelectedAsset('');
       setRedeemAmount(null);
-      alert('赎回申请已提交！');
+      alert(t('redemption.redeemApplicationSubmitted'));
     } catch (error) {
       // Handle error silently in production
-      alert('赎回失败，请重试');
+      alert(t('redemption.redeemFailed'));
     }
   };
 
   const handleClaim = async (redeemId: string) => {
     try {
       await dispatch(claimRedeem(redeemId));
-      alert('资产提取成功！');
+      alert(t('redemption.assetClaimSuccess'));
     } catch (error) {
       // Handle error silently in production
-      alert('提取失败，请重试');
+      alert(t('redemption.claimFailed'));
     }
   };
 
@@ -177,9 +179,9 @@ const RedemptionPage: React.FC = () => {
   if (!isConnected) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 0' }}>
-        <Title level={3}>请先连接钱包</Title>
+        <Title level={3}>{t('redemption.pleaseConnectWallet')}</Title>
         <Text type="secondary">
-          您需要连接钱包才能进行赎回操作
+          {t('redemption.needWalletToRedeem')}
         </Text>
       </div>
     );
@@ -187,33 +189,33 @@ const RedemptionPage: React.FC = () => {
 
   return (
     <div>
-      <Title level={2}>质押赎回</Title>
+      <Title level={2}>{t('redemption.title')}</Title>
       <Text type="secondary">
-        赎回您的流动性质押代币并获得原始资产
+        {t('redemption.description')}
       </Text>
 
       {liquidAssets.length > 0 && (
-        <Card title="可赎回资产" style={{ marginTop: 24, marginBottom: 24 }}>
+        <Card title={t('redemption.redeemableAssets')} style={{ marginTop: 24, marginBottom: 24 }}>
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
             {liquidAssets.map((asset: any) => (
-              <Card 
+              <Card
                 key={asset.id}
                 style={{ width: 200 }}
                 actions={[
-                  <Button 
-                    type="primary" 
+                  <Button
+                    type="primary"
                     icon={<SwapOutlined />}
                     onClick={() => showRedeemModal(asset.symbol)}
                   >
-                    赎回
+                    {t('redemption.redeem')}
                   </Button>
                 ]}
               >
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ 
-                    width: 48, 
-                    height: 48, 
-                    borderRadius: '50%', 
+                  <div style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
                     background: '#f0f0f0',
                     display: 'flex',
                     alignItems: 'center',
@@ -225,7 +227,7 @@ const RedemptionPage: React.FC = () => {
                     {asset?.symbol?.charAt(0) || '?'}
                   </div>
                   <Title level={5} style={{ margin: '8px 0' }}>{asset?.symbol || 'Unknown'}</Title>
-                  <Text type="secondary">余额: {parseFloat(asset?.balance || '0').toFixed(6)}</Text>
+                  <Text type="secondary">{t('redemption.balance')}: {parseFloat(asset?.balance || '0').toFixed(6)}</Text>
                 </div>
               </Card>
             ))}
@@ -233,7 +235,7 @@ const RedemptionPage: React.FC = () => {
         </Card>
       )}
 
-      <Card title="赎回记录">
+      <Card title={t('redemption.redeemRecords')}>
         <Table
           columns={columns}
           dataSource={redeems}
@@ -242,13 +244,13 @@ const RedemptionPage: React.FC = () => {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 条记录`
+            showTotal: (total) => `${t('assets.total')} ${total} ${t('redemption.records')}`
           }}
         />
       </Card>
 
       <Modal
-        title={`赎回 ${selectedAsset}`}
+        title={t('redemption.redeemAsset', { asset: selectedAsset })}
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
@@ -256,12 +258,12 @@ const RedemptionPage: React.FC = () => {
       >
         <Form layout="vertical" onFinish={handleRedeem}>
           <Form.Item
-            label="赎回数量"
+            label={t('redemption.redeemAmountLabel')}
             name="amount"
-            rules={[{ required: true, message: '请输入赎回数量' }]}
+            rules={[{ required: true, message: t('redemption.pleaseEnterRedeemAmount') }]}
           >
             <InputNumber
-              placeholder="输入赎回数量"
+              placeholder={t('redemption.enterRedeemAmount')}
               value={redeemAmount}
               onChange={setRedeemAmount}
               style={{ width: '100%' }}
@@ -271,37 +273,37 @@ const RedemptionPage: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item label="赎回类型" name="type">
+          <Form.Item label={t('redemption.redeemType')} name="type">
             <div>
               <Button.Group style={{ width: '100%' }}>
-                <Button 
+                <Button
                   type={redeemType === 'standard' ? 'primary' : 'default'}
                   onClick={() => setRedeemType('standard')}
                   style={{ width: '50%' }}
                 >
-                  标准赎回
+                  {t('redemption.standardRedeem')}
                 </Button>
-                <Button 
+                <Button
                   type={redeemType === 'instant' ? 'primary' : 'default'}
                   onClick={() => setRedeemType('instant')}
                   style={{ width: '50%' }}
                 >
-                  即时赎回
+                  {t('redemption.instantRedeem')}
                 </Button>
               </Button.Group>
-              
+
               <div style={{ marginTop: 12 }}>
                 {redeemType === 'standard' ? (
                   <Alert
-                    message="标准赎回"
-                    description="等待期: 7-28天，无额外费用，按市场汇率兑换"
+                    message={t('redemption.standardRedeem')}
+                    description={t('redemption.standardRedeemInfo')}
                     type="info"
                     showIcon
                   />
                 ) : (
                   <Alert
-                    message="即时赎回"
-                    description="立即到账，收取3-5%手续费，按当前汇率兑换"
+                    message={t('redemption.instantRedeem')}
+                    description={t('redemption.instantRedeemInfo')}
                     type="warning"
                     showIcon
                   />
@@ -313,10 +315,10 @@ const RedemptionPage: React.FC = () => {
           <Form.Item style={{ marginTop: 24 }}>
             <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
               <Button onClick={() => setIsModalVisible(false)}>
-                取消
+                {t('redemption.cancel')}
               </Button>
               <Button type="primary" htmlType="submit">
-                确认赎回
+                {t('redemption.confirmRedeem')}
               </Button>
             </Space>
           </Form.Item>
