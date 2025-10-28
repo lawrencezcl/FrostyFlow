@@ -271,7 +271,7 @@
       },
       "howToConnectWallet": {
         "question": "如何连接钱包？",
-        "answer": "FrostyFlow支持多种钱包：Polkadot.js、MetaMask、Talisman。点击右上角的"连接钱包"按钮，选择您已安装的钱包扩展，按照提示完成连接即可。"
+        "answer": "FrostyFlow支持多种钱包：Polkadot.js、MetaMask、Talisman。点击右上角的\"连接钱包\"按钮，选择您已安装的钱包扩展，按照提示完成连接即可。"
       },
       "stakingRisks": {
         "question": "质押有什么风险？",
@@ -279,7 +279,7 @@
       },
       "howToRedeem": {
         "question": "如何赎回质押的资产？",
-        "answer": "您可以选择两种赎回方式：1) 标准赎回：等待期7-28天，无额外费用 2) 即时赎回：立即到账，收取3-5%手续费。在"质押赎回"页面选择相应的流动性代币进行操作。"
+        "answer": "您可以选择两种赎回方式：1) 标准赎回：等待期7-28天，无额外费用 2) 即时赎回：立即到账，收取3-5%手续费。在\"质押赎回\"页面选择相应的流动性代币进行操作。"
       },
       "howEarningsCalculated": {
         "question": "收益如何计算？",
